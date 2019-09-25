@@ -1,6 +1,7 @@
-# Cymptom Candidate Task
-
 ![](cymptom_logo.svg)
+&nbsp;
+
+# Cymptom Candidate Task
 
 ## MSRPC using Python
 In the following task you’re going to use MSRPC protocol (Microsoft implementation of DCERPC) in order to write a system for managing accounts of a remote Windows machines (both local and domain
