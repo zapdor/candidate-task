@@ -1,4 +1,4 @@
-[logo]:(cymptom_logo.svg=250px)
+[logo]:(cymptom_logo.svg)
 
 # Cymptom Candidate Task
 
