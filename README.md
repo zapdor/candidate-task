@@ -1,3 +1,5 @@
+[logo]:(cymptom_logo.svg=250px)
+
 # Cymptom Candidate Task
 
 ## MSRPC using Python
