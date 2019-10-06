@@ -7,7 +7,7 @@
 In the following task you’re going to use MSRPC protocol (Microsoft implementation of DCERPC) in order to manage a remote Windows machine. 
 
 In specific, you will use MS-SAMR API which provides managements functionality for an
-account store or directory. You will find any information regarding the interface in the following https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/4df07fab-1bbc-452f-8e92-7853a3c7e380[link].
+account store or directory. You will find any information regarding the interface in the following [link](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/4df07fab-1bbc-452f-8e92-7853a3c7e380).
 You are not required to implement the whole MS-SAMR interface. Most of the work was already done
 for you by https://github.com/SecureAuthCorp/impacket[Impacket] project. The project contains an implementation for most MSRPC interfaces with examples and test cases.
 Your code should support the following:
