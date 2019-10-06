@@ -9,14 +9,14 @@ In the following task you’re going to use MSRPC protocol (Microsoft implementa
 In specific, you will use MS-SAMR API which provides managements functionality for an
 account store or directory. You will find any information regarding the interface in the following [link](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/4df07fab-1bbc-452f-8e92-7853a3c7e380).
 You are not required to implement the whole MS-SAMR interface. Most of the work was already done
-for you by https://github.com/SecureAuthCorp/impacket[Impacket] project. The project contains an implementation for most MSRPC interfaces with examples and test cases.
+for you by [Impacket](https://github.com/SecureAuthCorp/impacket) project. The project contains an implementation for most MSRPC interfaces with examples and test cases.
 Your code should support the following:
 1. Create a new local user\group
 2. Retrieve all users\groups
 3. Delete a user\group
 
 The code should request the user for a command to execute and the system will operate accordingly.
-For start, try to implement a piece of code for the following https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/3d8e23d8-d9df-481f-83b3-9175f980294c[example]. This example emphasizes the
+For start, try to implement a piece of code for the following [example](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/3d8e23d8-d9df-481f-83b3-9175f980294c). This example emphasizes the
 sequence of methods required to create a user account on a remote system. You need to
 understand each function, how it works, and the relevant structures involved.
 Next, extend it to fully support all the functionality required.
