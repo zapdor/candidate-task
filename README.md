@@ -22,8 +22,8 @@ understand each function, how it works, and the relevant structures involved.
 Next, extend it to fully support all the functionality required.
 
 ### Requirements
-- You should be using Python 3.6+
 - You should work with GitHub repository to store and manage your code.
+- You should be using Python 3.6+
 - You are required to write your code using OOP concepts
 - Document your code as much as needed
 
