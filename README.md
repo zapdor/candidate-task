@@ -13,7 +13,6 @@ for you by [Impacket](https://github.com/SecureAuthCorp/impacket) project. The p
 Your code should support the following:
 1. Create a new local user\group
 2. Retrieve all users\groups
-3. Delete a user\group
 
 The code should request the user for a command to execute and the system will operate accordingly.
 For start, try to implement a piece of code for the following [example](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/3d8e23d8-d9df-481f-83b3-9175f980294c). This example emphasizes the
