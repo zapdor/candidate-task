@@ -24,6 +24,7 @@ Next, extend it to fully support all the functionality required.
 - You should work with GitHub repository to store and manage your code.
 - You should be using Python 3.6+
 - You are required to write your code using OOP concepts
+- You are required to write tests for your code using pytest framework
 - Document your code as much as needed
 
 ### Before starting this task
