@@ -29,6 +29,6 @@ Next, extend it to fully support all the functionality required.
 
 ### Before starting this task
 - Fork this repository ([https://github.com/cymptomlabs/candidate-task.git](https://github.com/cymptomlabs/candidate-task)).
-- Send a link to the forked github repository to: itamar@cymptom.com .
+- Send a link to the forked github repository to: ziv@cymptom.com .
 
 **Good luck!**
