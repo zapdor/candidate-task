@@ -1,10 +1,10 @@
 from os import getenv
 import pytest
 
-from general_tools import random_computer_name
+from samr_client.ms_samr_client import MS_SAMR_Client
 
-LOCAL = "local"
-GLOBAL = "global"
+LOCAL = "user"
+GROUP = "group"
 
 ENV_DOMAIN_VAR = "candidate_domain"
 ENV_USER_VAR = "candidate_username"
@@ -26,4 +26,4 @@ def credentials():
 
 @pytest.fixture()
 def random_computer_name_fixture(user_type):
-    return random_computer_name(user_type)
+    return MS_SAMR_Client.random_computer_name(user_type)
