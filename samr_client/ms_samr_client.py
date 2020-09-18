@@ -14,14 +14,10 @@ from samr_client.ms_rpc_connection_manager import MS_RPC_ConnectionManager
 class MS_SAMR_Client(Cmd):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.logger = create_logger_with_prefix("MS_SAMR Client")
 
         options = self.parse_args(self.logger)
-        if not options:
-            print("Missing arguments.")
-            target_arg = input("Please add target argument: ")
-            options = self.parse_args([target_arg])
 
         self.file = getattr(options, "file", None)
         self._target = self.process_target(options, self.logger)
@@ -92,9 +88,12 @@ class MS_SAMR_Client(Cmd):
 
         if len(sys.argv) == 1:
             parser.print_help()
-            sys.exit(1)
+            print("No arguments given - need at least target to start.")
+            args = input("Please add arguments: ")
+            options = parser.parse_args([args])
 
-        options = parser.parse_args()
+        else:
+            options = parser.parse_args()
 
         if options.debug is True:
             logger.setLevel(DEBUG)
@@ -190,8 +189,10 @@ class MS_SAMR_Client(Cmd):
 
         if not user_type:
             print("Listing all users and groups!")
+
         elif user_type.lower() == 'group':
             print("Listing all groups!")
+
         elif user_type.lower() == 'local':
             print("Listing all local users!")
 
