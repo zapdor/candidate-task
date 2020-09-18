@@ -1,7 +1,11 @@
 from collections import namedtuple
 
 
-class AD_Entry(namedtuple("EntryData", ("name", "uid"))):
+class Target(namedtuple("CymptomTarget", "domain username password address lmhash nthash options")):
+    pass
+
+
+class ADEntry(namedtuple("EntryData", ("name", "uid"))):
     NOT_IMPLEMENTED_ERROR_MESSAGE = "Please implement {func_name} for the desired AD Entry"
 
     def __new__(cls, name, uid):
@@ -18,9 +22,9 @@ class AD_Entry(namedtuple("EntryData", ("name", "uid"))):
         raise NotImplementedError(self.NOT_IMPLEMENTED_ERROR_MESSAGE.format(func_name="list_all"))
 
 
-class User(AD_Entry):
+class User(ADEntry):
     pass
 
 
-class Group(AD_Entry):
+class Group(ADEntry):
     pass
