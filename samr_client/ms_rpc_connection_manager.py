@@ -1,38 +1,40 @@
-from logging import DEBUG
-
-from impacket.smbconnection import SMBConnection
+from impacket.dcerpc.v5 import epm, samr, transport
 
 from general_tools import create_logger_with_prefix
+from samr_client.abstract_connection_manager import AbstractConnectionContextManager
 
 
-class MS_RPC_ConnectionManager():
+class MS_RPC_ConnectionManager(AbstractConnectionContextManager):
     def __init__(self, target):
+        super().__init__(target)
         self.logger = create_logger_with_prefix("MS_RPC_Connection Manager")
-        self.__dict__.update(target._asdict())
 
     def connect(self):
-        try:
-            smb_client = SMBConnection(self.address, self.options.target_ip, sess_port=int(self.options.port))
-            if self.options.k is True:
-                smb_client.kerberosLogin(self.username, self.password, self.domain, self.lmhash, self.nthash,
-                                         self.options.aesKey, self.options.dc_ip)
-            else:
-                smb_client.login(self.username, self.password, self.domain, self.lmhash, self.nthash)
+        return self._dce_connect()
 
-        except Exception as e:
-            if self.logger.getLogger().level == DEBUG:
-                import traceback
-                traceback.print_exc()
+    def _config_rpc_transport(self):
+        if self.options.targetIp is not None:
+            stringBinding = epm.hept_map(self.options.targetIp, samr.MSRPC_UUID_SAMR, protocol='ncacn_np')
+        else:
+            stringBinding = epm.hept_map(self.options.dc_host, samr.MSRPC_UUID_SAMR, protocol='ncacn_np')
+        rpctransport = transport.DCERPCTransportFactory(stringBinding)
+        rpctransport.set_dport(self.__port)
 
-            self.logger.error(str(e))
+        if self.options.dc_ip is not None:
+            rpctransport.setRemoteHost(self.options.dc_ip)
+            rpctransport.setRemoteName(self.options.dc_host)
 
-        # TODO - rpc, dce
+        if hasattr(rpctransport, 'set_credentials'):
+            # This method exists only for selected protocol sequences.
+            rpctransport.set_credentials(self.__username, self.__password, self.__domain, self.__lmhash,
+                                         self.__nthash, self.__aesKey)
 
-    def _create_rpc_transport(self):
-        pass
+        rpctransport.set_kerberos(self.__doKerberos, self.options.dc_host or self.options.target_ip)
+        return rpctransport
 
     def _dce_connect(self):
-        pass
-
-    def close_connection(self):
-        pass
+        rpctransport = self._config_rpc_transport()
+        dce = rpctransport.get_dce_rpc()
+        dce.connect()
+        dce.bind(samr.MSRPC_UUID_SAMR)
+        return dce

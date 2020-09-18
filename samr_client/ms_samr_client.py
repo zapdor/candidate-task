@@ -7,7 +7,7 @@ from impacket import version as impacket_version
 from impacket.examples.smbclient import MiniImpacketShell
 
 from active_directory_tools.AD_Objects import Target
-from general_tools import create_logger_with_prefix, random_computer_name, get_random_string
+from general_tools import create_logger_with_prefix, get_random_string
 from samr_client.ms_rpc_connection_manager import MS_RPC_ConnectionManager
 
 
@@ -22,6 +22,20 @@ class MS_SAMR_Client(Cmd):
         self.file = getattr(options, "file", None)
         self._target = self.process_target(options, self.logger)
         self.connection_manager = MS_RPC_ConnectionManager(self.target)
+
+    def run(self):
+        self.connection_manager.connect()
+
+        if self.file is not None:
+            self.logger.info("Executing commands from %s" % self.file.name)
+            for line in self.file.readlines():
+                if line[0] != '#':
+                    print("# %s" % line, end=' ')
+                    self.onecmd(line)
+                else:
+                    print(line, end=' ')
+        else:
+            self.cmdloop()
 
     # region ---------- properties ----------
 
@@ -172,7 +186,7 @@ class MS_SAMR_Client(Cmd):
             return False
 
         if not user_name:
-            user_name = random_computer_name(user_type)
+            user_name = self.random_computer_name(user_type)
 
         print(f"Adding user of type {user_type} with name {user_name} to the remote Active Directory.")
 
@@ -204,21 +218,6 @@ class MS_SAMR_Client(Cmd):
     do_EOF = do_exit
 
     # endregion ---------- shell ----------
-
-    def run(self):
-        self.connection_manager.connect()
-
-        if self.file is not None:
-            self.logger.info("Executing commands from %s" % self.file.name)
-            for line in self.file.readlines():
-                if line[0] != '#':
-                    print("# %s" % line, end=' ')
-                    self.onecmd(line)
-                else:
-                    print(line, end=' ')
-        else:
-            self.cmdloop()
-
     # region ---------- helper functions ----------
 
     @staticmethod
