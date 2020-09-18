@@ -1,7 +1,7 @@
 from os import getenv
 import pytest
 
-from general_tools import get_random_string
+from general_tools import random_computer_name
 
 LOCAL = "local"
 GLOBAL = "global"
@@ -25,8 +25,5 @@ def credentials():
 
 
 @pytest.fixture()
-def random_computer_name(user_type):
-    def _random_name():
-        return get_random_string(length=10, prefix=f"TestUser_{user_type}")
-
-    return _random_name()
+def random_computer_name_fixture(user_type):
+    return random_computer_name(user_type)
