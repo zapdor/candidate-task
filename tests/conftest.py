@@ -22,5 +22,5 @@ def credentials():
 
 
 @pytest.fixture()
-def random_computer_name_fixture(user_type):
-    return MS_SAMR_Client.random_computer_name(user_type)
+def random_computer_name_fixture(entry_type):
+    return MS_SAMR_Client.random_computer_name(entry_type)

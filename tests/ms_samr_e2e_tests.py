@@ -8,7 +8,7 @@ pytestmark = [pytest.mark.e2e_tests, pytest.mark.success]
 logger = create_logger_with_prefix("E2E_TESTS", DEBUG)
 
 
-@pytest.mark.parametrize("entry_type", MS_SAMR_Client.USER_TYPES)
+@pytest.mark.parametrize("entry_type", MS_SAMR_Client.ENTRY_TYPES)
 def test__connect__add_entry__get_entries(entry_type, credentials, random_computer_name_fixture):
     entry_name_to_add = random_computer_name_fixture
 
@@ -26,9 +26,9 @@ def test__connect__add_entry__get_entries(entry_type, credentials, random_comput
 
         logger.debug(f"Adding {entry_type} {entry_name_to_add}")
         client.add_entry(entry_name=entry_name_to_add, entry_type=entry_type)
-        logger.debug("User added!")
+        logger.debug("Entry added!")
 
-        logger.debug("Checking user list to see that the user was added successfully...")
+        logger.debug("Checking entries list to see that the entry was added successfully...")
         entries_list_after_addition = client.get_entries()
         added_entries = set(entries_list_after_addition).difference(set(entries_list))
         logger.debug(f"Newly created entries found are: {added_entries}")
@@ -41,4 +41,4 @@ def test__connect__add_entry__get_entries(entry_type, credentials, random_comput
     # note: other entries might have been just added as well
     assert added_entries, "No new entry was created!"
     assert entry_name_to_add in added_entries, "The entry was not created."
-    # TODO - assert created user is of the correct type, else mention wrong type
+    # TODO - assert created entry is of the correct type, else mention wrong type

@@ -119,23 +119,23 @@ class MS_SAMR_OptionsParser:
 
 class MS_SAMR_ShellDecorators:
 
-    def prompt_user_type_if_needed(err_msg):
+    def prompt_entry_type_if_needed(err_msg):
         def inner(func):
             @functools.wraps(func)
-            def wrapper(instance, user_type):
-                func(instance, input(err_msg) if not user_type else user_type)
+            def wrapper(instance, entry_type):
+                func(instance, input(err_msg) if not entry_type else entry_type)
 
             return wrapper
 
         return inner
 
-    def validate_user_type(err_msg, allow_no_user_type=False):
+    def validate_entry_type(err_msg, allow_no_entry_type=False):
         def inner(func):
             @functools.wraps(func)
-            def wrapper(instance, user_type):
-                if (allow_no_user_type and not user_type) or \
-                        (user_type.lower() in instance.USER_TYPES):
-                    func(instance, user_type)
+            def wrapper(instance, entry_type):
+                if (allow_no_entry_type and not entry_type) or \
+                        (entry_type.lower() in instance.ENTRY_TYPES):
+                    func(instance, entry_type)
                     return
 
                 print(err_msg)

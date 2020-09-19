@@ -54,7 +54,7 @@ class MS_SAMR_Client(Cmd):
 
     LOCAL = "local"
     GROUP = "group"
-    USER_TYPES = [LOCAL, GROUP]
+    ENTRY_TYPES = [LOCAL, GROUP]
 
     prompt = f"{'MS_SAMR_CLIENT'}> "
     intro = """Welcome to Dor Bareket's 'Remote Microsoft Security Account Manager'. 
@@ -63,46 +63,46 @@ class MS_SAMR_Client(Cmd):
     
     Type ? to list commands"""
 
-    PLEASE_INSET_USER_TYPE_MSG = f"Please choose which user type from {USER_TYPES}: "
-    UNDEFINED_USER_TYPE = f"Undefined user_type! Allowed only: {USER_TYPES}"
+    PLEASE_INSET_ENTRY_TYPE_MSG = f"Please choose which entry type from {ENTRY_TYPES}: "
+    UNDEFINED_ENTRY_TYPE = f"Undefined entry_type! Allowed only: {ENTRY_TYPES}"
 
     def do_exit(self, input):
         """
-        Exit the application. For Windows/Linux use Ctrl+C. For OS-X use Command+C. Otherwise you're all alone.
-        :param input:
+        Exit the application.
+        Keyboard Shortcuts: For Windows/Linux use Ctrl+C. For OS-X use Command+C. Otherwise just type 'exit'.
         """
         print("Bye Mate")
         return True
 
-    @shell_decorators.prompt_user_type_if_needed(err_msg=PLEASE_INSET_USER_TYPE_MSG)
-    @shell_decorators.validate_user_type(err_msg=UNDEFINED_USER_TYPE)
-    def do_add_user(self, user_type, user_name=None):
+    @shell_decorators.prompt_entry_type_if_needed(err_msg=PLEASE_INSET_ENTRY_TYPE_MSG)
+    @shell_decorators.validate_entry_type(err_msg=UNDEFINED_ENTRY_TYPE)
+    def do_add_entry(self, entry_type, entry_name=None):
         """
         Add a new entry to the remote Active Directory domain.
-        :param user_type: accepted values: local / group
-        :param user_name: if not given, a random username will be created
+        :param entry_type: accepted values: local / group
+        :param entry_name: if not given, a random entry name will be created
         """
-        if not user_name:
-            user_name = self.random_computer_name(user_type)
+        if not entry_name:
+            entry_name = self.random_computer_name(entry_type)
 
-        print(f"Adding user of type '{user_type}' with name '{user_name}' to the remote Active Directory.")
+        print(f"Adding entry of type '{entry_type}' with name '{entry_name}' to the remote Active Directory.")
 
         # TODO
 
-    @shell_decorators.prompt_user_type_if_needed(err_msg=PLEASE_INSET_USER_TYPE_MSG)
-    @shell_decorators.validate_user_type(err_msg=UNDEFINED_USER_TYPE, allow_no_user_type=True)
-    def do_list_users(self, user_type=None):
+    @shell_decorators.prompt_entry_type_if_needed(err_msg=PLEASE_INSET_ENTRY_TYPE_MSG)
+    @shell_decorators.validate_entry_type(err_msg=UNDEFINED_ENTRY_TYPE, allow_no_entry_type=True)
+    def do_list_entries(self, entry_type=None):
         """
-        Lists all groups and users of the remote Active Directory domain.
-        :param user_type: optional. if not given, all users and groups will be listed. accepted values: local / group
+        Lists all groups and local users of the remote Active Directory domain.
+        :param entry_type: optional. if not given, all local users and groups will be listed. accepted values: local / group
         """
-        if not user_type:
-            print("Listing all users and groups!")
+        if not entry_type:
+            print("Listing all local users and groups!")
 
-        elif user_type.lower() == self.GROUP:
+        elif entry_type.lower() == self.GROUP:
             print("Listing all groups!")
 
-        elif user_type.lower() == self.LOCAL:
+        elif entry_type.lower() == self.LOCAL:
             print("Listing all local users!")
 
         # TODO
@@ -116,8 +116,8 @@ class MS_SAMR_Client(Cmd):
     # region ---------- helper functions ----------
 
     @staticmethod
-    def random_computer_name(user_type):
-        return get_random_string(length=10, prefix=f"TestUser_{user_type}_")
+    def random_computer_name(entry_type):
+        return get_random_string(length=10, prefix=f"TestUser_{entry_type}_")
 
     # endregion ---------- helper functions ----------
 
