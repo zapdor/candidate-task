@@ -14,31 +14,19 @@ def test__connect__add_entry__get_entries(entry_type, credentials, random_comput
 
     client = MS_SAMR_Client(credentials)
 
-    added_entries = None
+    logger.debug(f"Adding {entry_type} {entry_name_to_add}")
+    client.do_add_entry(entry_type=entry_type, entry_name=entry_name_to_add)
+    logger.debug("Entry added!")
 
-    logger.debug("Connecting to client...")
-    with client.connection_manager(client.target) as dce_connection:
-        logger.debug("Connection succeeded!")
+    assert client.connection_manager.connection.disconnect == False, "Connection did not close successfully!"
 
-        logger.debug("Getting list of entries:")
-        entries_list = client.get_entries()
-        logger.debug(f"Entries list: {entries_list}")
+    logger.debug("Getting list of entries:")
+    entries_list = client.do_list_entries(entry_type)
+    logger.debug(f"Entries list: {entries_list}")
 
-        logger.debug(f"Adding {entry_type} {entry_name_to_add}")
-        client.add_entry(entry_name=entry_name_to_add, entry_type=entry_type)
-        logger.debug("Entry added!")
-
-        logger.debug("Checking entries list to see that the entry was added successfully...")
-        entries_list_after_addition = client.get_entries()
-        added_entries = set(entries_list_after_addition).difference(set(entries_list))
-        logger.debug(f"Newly created entries found are: {added_entries}")
-
-        logger.debug("Asserting success...")
+    logger.debug("Asserting success...")
 
     assert client.connection_manager.connection.disconnect == False, "Connection did not close successfully!"
     logger.debug("Connection closed successfully!")
 
-    # note: other entries might have been just added as well
-    assert added_entries, "No new entry was created!"
-    assert entry_name_to_add in added_entries, "The entry was not created."
-    # TODO - assert created entry is of the correct type, else mention wrong type
+    assert entry_name_to_add in entries_list, "The entry was not created."
