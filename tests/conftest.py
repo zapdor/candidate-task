@@ -1,7 +1,7 @@
 from os import getenv
 import pytest
 
-from samr_client.ms_samr_client import MS_SAMR_Client
+from ms_samr_client import MS_SAMR_Client
 
 LOCAL = "user"
 GROUP = "group"

@@ -1,7 +1,7 @@
 from logging import DEBUG
 
 import pytest
-from samr_client.ms_samr_client import samr_client
+from ms_samr_client import samr_client
 from general_tools import create_logger_with_prefix
 from tests.conftest import LOCAL, GROUP
 

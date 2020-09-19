@@ -4,11 +4,10 @@ import re
 from cmd import Cmd
 from logging import DEBUG
 from impacket import version as impacket_version
-from impacket.examples.smbclient import MiniImpacketShell
 
 from active_directory_tools.AD_Objects import Target
 from general_tools import create_logger_with_prefix, get_random_string
-from samr_client.ms_rpc_connection_manager import MS_RPC_ConnectionManager
+from connection_manager.ms_rpc_connection_manager import MS_RPC_ConnectionManager
 
 
 class MS_SAMR_Client(Cmd):
