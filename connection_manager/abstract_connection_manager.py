@@ -5,6 +5,7 @@ class AbstractConnectionContextManager:
     def __init__(self, target):
         self.logger = create_logger_with_prefix("MS_RPC_Connection Manager")
         self.__dict__.update(target._asdict())
+        self.__dict__.update(vars(target.options))
         self.connection = None
 
     def __enter__(self):

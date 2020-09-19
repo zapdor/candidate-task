@@ -13,23 +13,23 @@ class MS_RPC_ConnectionManager(AbstractConnectionContextManager):
         return self._dce_connect()
 
     def _config_rpc_transport(self):
-        if self.options.targetIp is not None:
-            stringBinding = epm.hept_map(self.options.targetIp, samr.MSRPC_UUID_SAMR, protocol='ncacn_np')
+        if self.target_ip is not None:
+            stringBinding = epm.hept_map(self.target_ip, samr.MSRPC_UUID_SAMR, protocol='ncacn_np')
         else:
-            stringBinding = epm.hept_map(self.options.dc_host, samr.MSRPC_UUID_SAMR, protocol='ncacn_np')
+            stringBinding = epm.hept_map(self.dc_host, samr.MSRPC_UUID_SAMR, protocol='ncacn_np')
         rpctransport = transport.DCERPCTransportFactory(stringBinding)
-        rpctransport.set_dport(self.__port)
+        rpctransport.set_dport(self.port)
 
-        if self.options.dc_ip is not None:
-            rpctransport.setRemoteHost(self.options.dc_ip)
-            rpctransport.setRemoteName(self.options.dc_host)
+        if self.dc_ip is not None:
+            rpctransport.setRemoteHost(self.dc_ip)
+            rpctransport.setRemoteName(self.dc_host)
 
         if hasattr(rpctransport, 'set_credentials'):
             # This method exists only for selected protocol sequences.
-            rpctransport.set_credentials(self.__username, self.__password, self.__domain, self.__lmhash,
-                                         self.__nthash, self.__aesKey)
+            rpctransport.set_credentials(self.username, self.password, self.domain, self.lmhash,
+                                         self.nthash, self.aesKey)
 
-        rpctransport.set_kerberos(self.__doKerberos, self.options.dc_host or self.options.target_ip)
+        rpctransport.set_kerberos(self.k, self.dc_host or self.target_ip)
         return rpctransport
 
     def _dce_connect(self):

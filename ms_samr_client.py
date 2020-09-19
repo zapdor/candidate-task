@@ -92,6 +92,10 @@ class MS_SAMR_Client(Cmd):
         authentication_group.add_argument('-dc-ip', action='store', metavar="ip address",
                                           help='IP Address of the domain controller. If omitted it will use the domain part (FQDN) specified in '
                                                'the target parameter')
+        authentication_group.add_argument('-dc-host', action='store', metavar="hostname",
+                                          help='Hostname of the domain controller to use. '
+                                               'If ommited, the domain part (FQDN) '
+                                               'specified in the account parameter will be used')
         authentication_group.add_argument('-target-ip', action='store', metavar="ip address",
                                           help='IP Address of the target machine. If omitted it will use whatever was specified as target. '
                                                'This is useful when target is the NetBIOS name and you cannot resolve it')
@@ -161,9 +165,14 @@ class MS_SAMR_Client(Cmd):
     # endregion ---------- parsing ----------
     # region ---------- shell ----------
 
-    USER_TYPES = ["local", "global"]
-    prompt = 'MS_SAMR_Client> '
-    into = """Welcome to Dor Bareket's 'Remote Microsoft Security Account Manager' Cymptom tool!
+    LOCAL = "local"
+    GROUP = "group"
+    USER_TYPES = [LOCAL, GROUP]
+    prompt = f"{'MS_SAMR_CLIENT'}> "
+    intro = """Welcome to Dor Bareket's 'Remote Microsoft Security Account Manager'. 
+    This tool was created as part of the candidate task for "Cymptom".
+    Hope you enjoy!
+    
     Type ? to list commands"""
 
     def do_exit(self, input):

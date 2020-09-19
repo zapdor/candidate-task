@@ -3,9 +3,6 @@ import pytest
 
 from ms_samr_client import MS_SAMR_Client
 
-LOCAL = "user"
-GROUP = "group"
-
 ENV_DOMAIN_VAR = "candidate_domain"
 ENV_USER_VAR = "candidate_username"
 ENV_PASSWORD_VAR = "candidate_password"
