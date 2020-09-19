@@ -1,7 +1,16 @@
 from collections import namedtuple
 
 
-class Target(namedtuple("CymptomTarget", "domain username password address lmhash nthash options")):
+class Target(namedtuple("CymptomTarget",
+                        """
+                        domain
+                        username
+                        password
+                        address
+                        lmhash
+                        nthash
+                        options
+                        """)):
     pass
 
 

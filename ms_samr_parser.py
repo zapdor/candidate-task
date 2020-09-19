@@ -21,7 +21,8 @@ class MS_SAMR_OptionsParser:
         parser = argparse.ArgumentParser(add_help=True,
                                          description="SMB client arg_parser implementation.")
 
-        parser.add_argument('target', action='store', help='[[domain/]username[:password]@]<targetName or address>')
+        parser.add_argument('target', action='store',
+                            help='[[domain/]username[:password]@]<targetName or address>')
         parser.add_argument('-file', type=argparse.FileType('r'),
                             help='input file with commands to execute in the mini shell')
         parser.add_argument('-debug', action='store_true', help='Turn DEBUG output ON')
@@ -60,7 +61,7 @@ class MS_SAMR_OptionsParser:
         if len(sys.argv) == 1:
             parser.print_help()
             print("No arguments given - need at least target to start.")
-            args = input("Please add arguments: ")
+            args = input("Please add arguments: ").split()
             options = parser.parse_args([args])
 
         else:
@@ -119,24 +120,37 @@ class MS_SAMR_OptionsParser:
 
 class MS_SAMR_ShellDecorators:
 
+    def split_args(func):
+        @functools.wraps(func)
+        def wrapper(instance, args_str, *args, **kwargs):
+            args_list = tuple(args_str.split() or [None] + list(args))
+            func(instance, *args_list, **kwargs)
+
+        return wrapper
+
     def prompt_entry_type_if_needed(err_msg):
         def inner(func):
             @functools.wraps(func)
-            def wrapper(instance, entry_type):
-                func(instance, input(err_msg) if not entry_type else entry_type)
+            def wrapper(instance, entry_type, *args, **kwargs):
+                while not entry_type:
+                    inp = input(err_msg)
+                    entry_type = inp.split()[0] if inp else ''
+
+                func(instance, entry_type, *args, **kwargs)
 
             return wrapper
 
         return inner
 
-    def validate_entry_type(err_msg, allow_no_entry_type=False):
+    def validate_entry_type(err_msg, allow_no_entry_type=False, num_params=1):
         def inner(func):
             @functools.wraps(func)
-            def wrapper(instance, entry_type):
-                if (allow_no_entry_type and not entry_type) or \
-                        (entry_type.lower() in instance.ENTRY_TYPES):
-                    func(instance, entry_type)
-                    return
+            def wrapper(instance, entry_type, *args, **kwargs):
+                if (allow_no_entry_type and not entry_type) \
+                        or (entry_type.lower() in instance.ENTRY_TYPES):
+                    if num_params - 1 > len(args):
+                        args = [None] * (num_params - 1)
+                    return func(instance, entry_type, *args, **kwargs)
 
                 print(err_msg)
 
