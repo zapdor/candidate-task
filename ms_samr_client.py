@@ -1,5 +1,6 @@
 from cmd import Cmd
 
+from AD_Objects import User
 from general_tools import create_logger_with_prefix, get_random_string
 from ms_rpc_connection_manager import MS_RPC_ConnectionManager
 from ms_samr_parser import MS_SAMR_OptionsParser as options_parser, MS_SAMR_ShellDecorators as shell_decorators
@@ -15,11 +16,9 @@ class MS_SAMR_Client(Cmd):
 
         self.file = getattr(options, "file", None)
         self._target = options_parser.process_target(options, self.logger)
-        self.connection_manager = MS_RPC_ConnectionManager(self.target)
+        self.connection_manager = lambda: MS_RPC_ConnectionManager(self.target)
 
     def run(self):
-        self.connection_manager.connect()
-
         if self.file is not None:
             self.logger.info("Executing commands from %s" % self.file.name)
             for line in self.file.readlines():
@@ -74,8 +73,9 @@ class MS_SAMR_Client(Cmd):
         print("Bye Mate")
         return True
 
+    @shell_decorators.split_args
     @shell_decorators.prompt_entry_type_if_needed(err_msg=PLEASE_INSET_ENTRY_TYPE_MSG)
-    @shell_decorators.validate_entry_type(err_msg=UNDEFINED_ENTRY_TYPE)
+    @shell_decorators.validate_entry_type(err_msg=UNDEFINED_ENTRY_TYPE, num_params=2)
     def do_add_entry(self, entry_type, entry_name=None):
         """
         Add a new entry to the remote Active Directory domain.
@@ -86,10 +86,12 @@ class MS_SAMR_Client(Cmd):
             entry_name = self.random_computer_name(entry_type)
 
         print(f"Adding entry of type '{entry_type}' with name '{entry_name}' to the remote Active Directory.")
+        with self.connection_manager(self.target) as connection:
+            pass
 
         # TODO
 
-    @shell_decorators.prompt_entry_type_if_needed(err_msg=PLEASE_INSET_ENTRY_TYPE_MSG)
+    @shell_decorators.split_args
     @shell_decorators.validate_entry_type(err_msg=UNDEFINED_ENTRY_TYPE, allow_no_entry_type=True)
     def do_list_entries(self, entry_type=None):
         """
@@ -104,6 +106,9 @@ class MS_SAMR_Client(Cmd):
 
         elif entry_type.lower() == self.LOCAL:
             print("Listing all local users!")
+
+        with self.connection_manager() as domain_handles:
+            pass
 
         # TODO
 
@@ -129,3 +134,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# TODO - FIXME - docstring
+# TODO - FIXME - unit-tests
