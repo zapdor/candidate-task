@@ -21,10 +21,20 @@ class Target(namedtuple("CymptomTarget",
                         nthash
                         options
                         """)):
+    """
+    A class representing the targetted domain for the connection.
+    """
     pass
 
 
 class ADEntry(ABC):
+    """
+    Base class for any Active Directory Entry.
+    Deals with creation of new entries and listing entries.
+
+    To inherite, simply replace the Abstract functions constants
+     with the relevant ones from impacket.dcerpc.v{version}.samr package.
+    """
     HANDLE = 'ABSTRACT'
     INFO_CLASS = 'ABSTRACT'
     INFO_LOCATION_IN_BUFFER = 'General'
@@ -43,12 +53,14 @@ class ADEntry(ABC):
         self.entry_info = entry_info
 
     @classmethod
-    def get_AD_logger(cls):
-        return create_logger_with_prefix(cls.__name__)
-
-    @classmethod
     @contextmanager
-    def process_raw_entry_info(cls, connection, entry_raw_info):
+    def _process_raw_entry_info(cls, connection, entry_raw_info):
+        """
+        This context manager will automatically handle opening and closing Active Directory handles from impacket,
+        when trying to extract information regarding the entry.
+        :param connection: (dce, domain_handle)
+        :param entry_raw_info: entry inforamtion as received from impacket samr buffer.
+        """
         entry_resp = cls.OPEN_FUNC(*connection, MAXIMUM_ALLOWED, entry_raw_info[cls.ID_LOCATION])
         entry_handle = entry_resp[cls.HANDLE]
         dce = connection[0]
@@ -60,6 +72,13 @@ class ADEntry(ABC):
 
     @classmethod
     def create(cls, connection, name=None, entry_raw_info=None):
+        """
+        :param connection: (dce, domain_handle)
+        :param name: entry name
+        :param entry_raw_info: entry inforamtion as received from impacket samr buffer.
+        :return: object representing the created entry
+         :rtype: ADEntry
+        """
         if all(v is not None for v in [name, entry_raw_info]):
             raise RuntimeError("Create can work on either name or entry_raw_info, but not both!")
 
@@ -83,15 +102,21 @@ class ADEntry(ABC):
     def _create_entry_from_raw_info(cls, connection, entry_raw_info):
         name = entry_raw_info["Name"]
         uid = entry_raw_info["RelativeId"]
-        with cls.process_raw_entry_info(connection, entry_raw_info) as entry_info:
+        with cls._process_raw_entry_info(connection, entry_raw_info) as entry_info:
             entry_obj = cls(name, uid, entry_info["Buffer"][cls.INFO_LOCATION_IN_BUFFER])
 
         return entry_obj
 
     @classmethod
     def list_all(cls, connection):
+        """
+        List all entries of the used class type.
+        :param connection: (dce, domain_handle)
+        :return: entries_list of the used class type
+        """
         entries_list = []
         page = 1
+        logger = create_logger_with_prefix(cls.__name__)
 
         status = STATUS_MORE_ENTRIES
         while status == STATUS_MORE_ENTRIES:
@@ -105,7 +130,7 @@ class ADEntry(ABC):
             entries_raw_info = resp["Buffer"]["Buffer"]
             page_entries = [cls.create(connection, entry_raw_info=entry_raw_info) for entry_raw_info in entries_raw_info]
 
-            cls.get_AD_logger().debug(f"Found {len(page_entries)} AD entries of type {cls.__name__} in page {page}")
+            logger.debug(f"Found {len(page_entries)} AD entries of type {cls.__name__} in page {page}")
             page += 1
 
             entries_list.extend(page_entries)
@@ -123,6 +148,10 @@ class ADEntry(ABC):
 
 
 class User(ADEntry):
+    """
+    Class representing User entries in Active Directory Service.
+    It acts as an API between impacket user and Active Directory User entry.
+    """
     HANDLE = 'UserHandle'
     INFO_CLASS = samr.USER_INFORMATION_CLASS.UserAllInformation
 
@@ -133,6 +162,10 @@ class User(ADEntry):
 
 
 class Group(ADEntry):
+    """
+    Class representing Group entries in Active Directory Service.
+    It acts as an API between impacket group and Active Directory group entry.
+    """
     HANDLE = 'GroupHandle'
     INFO_CLASS = 'ABSTRACT'
 

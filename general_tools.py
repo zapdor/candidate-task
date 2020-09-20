@@ -5,6 +5,13 @@ import string
 
 
 def create_logger_with_prefix(log_prefix=__name__, logger_level=logging.INFO):
+    """
+    Creates a log with given prefix for any desired class.
+    format for the messages is: '[log_prefix]: log_message'
+    :param log_prefix:
+    :param logger_level:
+    :return: prefix logger
+    """
     if os.getenv("SAMR_DEBUG") == "1":
         logger_level = logging.DEBUG
 
@@ -14,6 +21,7 @@ def create_logger_with_prefix(log_prefix=__name__, logger_level=logging.INFO):
     formatter = logging.Formatter(log_format)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+
     logger.setLevel(logger_level)
 
     return logger

@@ -7,16 +7,27 @@ from AbstractClasses.abstract_connection_manager import AbstractConnectionContex
 class MS_RPC_ConnectionManager(AbstractConnectionContextManager):
     """
     Connection Manager for Microsoft Security Account Manager API.
+    CONTEXT MANAGER:
+    Inherited behaviour from AbstractConnectionContextManager makes it a context manager.
+    This means it can be used as "with" statements, to automatically open and close connections.
     """
     SERVER_HANDLE = "ServerHandle"
     DOMAIN_HANDLE = "DomainHandle"
     DOMAIN_ID = "DomainId"
 
     def __init__(self, target):
-        super().__init__(target, handles_manager_func=samr.hSamrCloseHandle)
+        super().__init__(target, handles_manager_closing_func=samr.hSamrCloseHandle)
         self.logger = create_logger_with_prefix("MS_RPC_Connection Manager")
 
     def connect(self):
+        """
+        This method:
+            1. creates a DCE connection and matching object.
+            2. creates an impacket server_handle
+            3. gets the domain name and handle of the target
+        :return: tuple(handles), dce, doamin_name
+         :rtype tuple - 3 elements
+        """
         dce = self._dce_connect()
         server_handle = self._get_server_handle(dce)
         domain_name, domain_handle = self._get_domain_name_and_handle(dce, server_handle)

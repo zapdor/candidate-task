@@ -19,17 +19,18 @@ class AbstractConnectionContextManager(ABC):
     _DOMAIN_HANDLE = "domain_handle"
     _CONNECTION_HANDLES_NAMES = [_SERVER_HANDLE, _DOMAIN_HANDLE]
 
-    def __init__(self, target, handles_manager_func=lambda connection, handle: None):
+    def __init__(self, target, handles_manager_closing_func=lambda connection, handle: None):
         """
-        :param target: the
-         :type AD_Objects.Target
-        :param handles_manager_func:
+        :param target: The targetted domain
+         :type target: AD_Objects.Target
+        :param handles_manager_closing_func: A function that closes handles. needed for closing them automatically.
+         :type handles_manager_closing_func: func(connection, handle) -> void
         """
         self.logger = create_logger_with_prefix("MS_RPC_Connection Manager")
         self.__dict__.update(target._asdict())
         self.__dict__.update(vars(target.options))
         self._handles_interface = namedtuple(self._CONNECTION_HANDLES_CLASS_NAME, self._CONNECTION_HANDLES_NAMES)
-        self._handles_manager_func = handles_manager_func
+        self._handles_manager_func = handles_manager_closing_func
 
         self._handles = None
         self.domain_name = None
