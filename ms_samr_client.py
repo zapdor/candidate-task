@@ -20,7 +20,7 @@ class MS_SAMR_Client(Cmd):
         super().__init__(*args, **kwargs)
         self.logger = create_logger_with_prefix("MS_SAMR Client")
 
-        options = options_parser.parse_args()
+        options = options_parser.parse_args(args or None)
         self._target = options_parser.process_target(options)
 
         self.file = getattr(options, "file", None)
@@ -92,6 +92,9 @@ class MS_SAMR_Client(Cmd):
         Add a new entry to the remote Active Directory domain.
         :param entry_type: accepted values: user / group
         :param entry_name: if not given, a random entry name will be created
+
+        :return entry_type, entry_name
+         :rtype str, str
         """
         if not entry_name:
             entry_name = self.random_computer_name(entry_type)
@@ -101,12 +104,17 @@ class MS_SAMR_Client(Cmd):
         with self.connection_manager() as (connection, domain_name):
             self._add_entry(connection, entry_type, entry_name)
 
+        return entry_type, entry_name
+
     @shell_decorators.split_args
     @shell_decorators.validate_entry_type(err_msg=UNDEFINED_ENTRY_TYPE, allow_no_entry_type=True)
     def do_list_entries(self, entry_type=None):
         """
         Lists all groups and local users of the remote Active Directory domain.
         :param entry_type: optional. if not given, all local users and groups will be listed. accepted values: user / group
+
+        :return entries_by_type
+         :rype: {Type(Entry): {entry_name: entry_id}}
         """
         if not entry_type:
             entry_type = self.ALL_ENTRIES
@@ -124,6 +132,7 @@ class MS_SAMR_Client(Cmd):
             entries_by_type = self._list_entries(connection, entry_type)
 
         pprint(entries_by_type)
+        return entries_by_type
 
     def default(self, inp):
         print(f"Unknown action: {inp}. Type '?' to list available commands")
@@ -168,7 +177,7 @@ class MS_SAMR_Client(Cmd):
                 print(f"Could not get entries_list for type {self.USER}. AD Error message: {str(err)}")
                 return []
 
-            entries_by_type["Users"] = {user.name: user.uid for user in user_entries}
+            entries_by_type[self.USER] = {user.name: user.uid for user in user_entries}
 
         if entry_type == self.GROUP or entry_type == self.ALL_ENTRIES:
             try:
@@ -177,7 +186,7 @@ class MS_SAMR_Client(Cmd):
                 print(f"Could not get entries_list for type {self.GROUP}. AD Error message: {str(err)}")
                 return []
 
-            entries_by_type["Groups"] = {group.name: group.uid for group in group_entries}
+            entries_by_type[self.GROUP] = {group.name: group.uid for group in group_entries}
 
         print(f"Entries list retrieved successfully!")
 
@@ -190,10 +199,10 @@ class MS_SAMR_Client(Cmd):
     def random_computer_name(entry_type):
         """
         :param entry_type: user / group. acts as prefix for the name.
-        :return: random computer name with format "{entry_type}_TestEntity_{random_string}"
+        :return: random computer name with format "{entry_type}_Test_{random_string}"
          :rtype str
         """
-        return get_random_string(length=10, prefix=f"{entry_type}_TestEntity_")[:19]
+        return get_random_string(length=10, prefix=f"{entry_type}_Test_")[:20]
 
     # endregion ---------- helper functions ----------
 

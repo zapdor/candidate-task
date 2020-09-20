@@ -16,7 +16,7 @@ class MS_SAMR_OptionsParser:
     """
 
     @staticmethod
-    def parse_args(logger=None):
+    def parse_args(args=None):
         """
         Optional: Parse method for options given from the commandline. Run with -h option for help.
         :return: options namespace, as parsed from commandline
@@ -64,7 +64,7 @@ class MS_SAMR_OptionsParser:
             options = parser.parse_args([args])
 
         else:
-            options = parser.parse_args()
+            options = parser.parse_args(args)
 
         if options.debug is True:
             os.environ["SAMR_DEBUG"] = "1"
@@ -139,7 +139,7 @@ class MS_SAMR_ShellDecorators:
         @functools.wraps(func)
         def wrapper(instance, args_str, *args, **kwargs):
             args_list = tuple(args_str.split() or [None] + list(args))
-            func(instance, *args_list, **kwargs)
+            return func(instance, *args_list, **kwargs)
 
         return wrapper
 
@@ -151,7 +151,7 @@ class MS_SAMR_ShellDecorators:
                     inp = input(err_msg)
                     entry_type = inp.split()[0] if inp else ''
 
-                func(instance, entry_type, *args, **kwargs)
+                return func(instance, entry_type, *args, **kwargs)
 
             return wrapper
 

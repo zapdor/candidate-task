@@ -14,6 +14,9 @@ class AbstractConnectionContextManager(ABC):
         with concrete_connection_manager(*args) as connection:
             do_some_communication_or_processing
     """
+
+    # region ---------- Class interface ----------
+
     _CONNECTION_HANDLES_CLASS_NAME = "ConnectionHandles"
     _SERVER_HANDLE = "server_handle"
     _DOMAIN_HANDLE = "domain_handle"
@@ -37,6 +40,39 @@ class AbstractConnectionContextManager(ABC):
         self.domain_handle = None
         self.connection = None
 
+    def close_connection(self):
+        if not self.connection:
+            return
+
+        for name, handle in self.handles._asdict().items():
+            try:
+                self._handles_manager_func(self.connection, handle)
+            except:
+                pass
+
+        self.connection.disconnect()
+
+    @abstractmethod
+    def connect(self):
+        pass
+
+    # endregion ---------- Class interface ----------
+    # region ---------- properties ----------
+
+    @property
+    def handles(self):
+        return self._handles
+
+    @handles.setter
+    def handles(self, new_handles):
+        if len(new_handles) != len(self._CONNECTION_HANDLES_NAMES):
+            raise ValueError(f"Expecting the following handles: {self._CONNECTION_HANDLES_NAMES}")
+
+        self._handles = self._handles_interface(*new_handles)
+
+    # endregion ---------- properties ----------
+    # region ---------- connection context manager ----------
+
     def __enter__(self):
         self.logger.debug("Starting connection!")
         try:
@@ -54,29 +90,4 @@ class AbstractConnectionContextManager(ABC):
         self.close_connection()
         self.logger.debug(f"Disconnected from domain {self.domain_name} successfully.")
 
-    def close_connection(self):
-        if not self.connection:
-            return
-
-        for name, handle in self.handles._asdict().items():
-            try:
-                self._handles_manager_func(self.connection, handle)
-            except:
-                pass
-
-        self.connection.disconnect()
-
-    @property
-    def handles(self):
-        return self._handles
-
-    @handles.setter
-    def handles(self, new_handles):
-        if len(new_handles) != len(self._CONNECTION_HANDLES_NAMES):
-            raise ValueError(f"Expecting the following handles: {self._CONNECTION_HANDLES_NAMES}")
-
-        self._handles = self._handles_interface(*new_handles)
-
-    @abstractmethod
-    def connect(self):
-        pass
+    # endregion ---------- connection context manager ----------
