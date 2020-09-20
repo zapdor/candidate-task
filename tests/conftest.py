@@ -8,7 +8,6 @@ ENV_USER_VAR = "username"
 ENV_PASSWORD_VAR = "password"
 ENV_TARGET_VAR = "target"
 ENV_TARGET_INPUT = "input"
-ENV_DEBUG_VAR = "debug"
 
 # Change these for different environment
 DEFAULT_TEST_ENV_VARS = {
@@ -16,7 +15,6 @@ DEFAULT_TEST_ENV_VARS = {
     ENV_USER_VAR: 'Administrator',
     ENV_PASSWORD_VAR: 'cymp',
     ENV_TARGET_VAR: '192.168.56.102',
-    ENV_DEBUG_VAR: '1'
 }
 DEFAULT_TEST_ENV = DEFAULT_TEST_ENV_VARS
 DEFAULT_TEST_ENV[ENV_TARGET_INPUT] = "CymptomTarget.local/Administrator:cymp@192.168.56.102"
