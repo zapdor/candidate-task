@@ -1,7 +1,7 @@
 from impacket.dcerpc.v5 import epm, samr, transport
 
-from general_tools import create_logger_with_prefix
 from AbstractClasses.abstract_connection_manager import AbstractConnectionContextManager
+from general_tools import create_logger_with_prefix
 
 
 class MS_RPC_ConnectionManager(AbstractConnectionContextManager):

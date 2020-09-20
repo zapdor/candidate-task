@@ -5,9 +5,10 @@ import re
 import sys
 from logging import DEBUG
 
+from impacket import version as impacket_version
+
 from AD_Objects import Target
 from general_tools import create_logger_with_prefix
-from impacket import version as impacket_version
 
 
 class MS_SAMR_OptionsParser:
@@ -61,7 +62,7 @@ class MS_SAMR_OptionsParser:
             parser.print_help()
             print("No arguments given - need at least target to start.")
             args = input("Please add arguments: ").split()
-            options = parser.parse_args([args])
+            options = parser.parse_args(args)
 
         else:
             options = parser.parse_args(args)

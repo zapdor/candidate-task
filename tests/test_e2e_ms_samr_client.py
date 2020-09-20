@@ -1,17 +1,15 @@
-import json
 from logging import DEBUG
 
 import pytest
 
 from general_tools import create_logger_with_prefix
 from ms_samr_client import MS_SAMR_Client
-from tests.conftest import ENV_TARGET_INPUT
+from tests.conftest import ENV_TARGET_INPUT, get_entries_list_from_stdout
 
 pytestmark = [pytest.mark.e2e_tests, pytest.mark.success]
-logger = create_logger_with_prefix("E2E_TESTS", DEBUG)
+logger = create_logger_with_prefix("SAMR_E2E_TESTS", DEBUG)
 
 
-@pytest.mark.usefixtures("mock_env_creds", "credentials_fixture", "random_computer_name_fixture", "capsys")
 @pytest.mark.parametrize("entry_type", MS_SAMR_Client.ENTRY_TYPES)
 def test__e2e__connect__add_entry__get_entries(entry_type,
                                                mock_env_creds, credentials_fixture, random_computer_name_fixture,
@@ -26,11 +24,8 @@ def test__e2e__connect__add_entry__get_entries(entry_type,
 
     logger.debug("Getting list of entries:")
     client.do_list_entries(f"{entry_type}")
-    out, err = capsys.readouterr()
-    entries_by_type_str = out[out.index('{'):len(out)-out[::-1].index('}')]
-    entries_by_type = json.loads(entries_by_type_str.replace("'", '"'))
+    entries_by_type = get_entries_list_from_stdout(capsys)
     logger.debug(f"Entries list: {entries_by_type}")
 
     assert entry_name_to_add in entries_by_type[entry_type], "The entry was not created."
     logger.debug("Success!")
-

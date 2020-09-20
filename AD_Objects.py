@@ -1,7 +1,6 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from collections import namedtuple
 from contextlib import contextmanager
-from logging import DEBUG
 
 from impacket.dcerpc.v5 import samr
 from impacket.dcerpc.v5.rpcrt import DCERPCException

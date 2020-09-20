@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from collections import namedtuple
+
 from general_tools import create_logger_with_prefix
 
 
