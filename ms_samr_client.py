@@ -23,7 +23,7 @@ class MS_SAMR_Client(Cmd):
         options = options_parser.parse_args()
 
         self.file = getattr(options, "file", None)
-        self._target = options_parser.process_target(options, self.logger)
+        self._target = options_parser.process_target(options)
         self.connection_manager = lambda: MS_RPC_ConnectionManager(self.target)
 
     def run(self):
@@ -193,7 +193,7 @@ class MS_SAMR_Client(Cmd):
         :return: random computer name with format "{entry_type}_TestEntity_{random_string}"
          :rtype str
         """
-        return get_random_string(length=10, prefix=f"{entry_type}_TestEntity_")
+        return get_random_string(length=10, prefix=f"{entry_type}_TestEntity_")[:19]
 
     # endregion ---------- helper functions ----------
 

@@ -16,7 +16,7 @@ class MS_SAMR_OptionsParser:
     """
 
     @staticmethod
-    def parse_args():
+    def parse_args(logger=None):
         """
         Optional: Parse method for options given from the commandline. Run with -h option for help.
         :return: options namespace, as parsed from commandline

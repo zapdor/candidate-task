@@ -4,7 +4,7 @@ import random
 import string
 
 
-def create_logger_with_prefix(log_prefix=__name__, logger_level=logging.INFO):
+def create_logger_with_prefix(log_prefix, logger_level=logging.INFO):
     """
     Creates a log with given prefix for any desired class.
     format for the messages is: '[log_prefix]: log_message'
@@ -16,7 +16,7 @@ def create_logger_with_prefix(log_prefix=__name__, logger_level=logging.INFO):
         logger_level = logging.DEBUG
 
     log_format = f"[{log_prefix}]: %(message)s"
-    logger = logging.getLogger()
+    logger = logging.getLogger("__name__")
     handler = logging.StreamHandler()
     formatter = logging.Formatter(log_format)
     handler.setFormatter(formatter)

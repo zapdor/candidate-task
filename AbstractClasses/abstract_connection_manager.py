@@ -26,7 +26,7 @@ class AbstractConnectionContextManager(ABC):
         :param handles_manager_closing_func: A function that closes handles. needed for closing them automatically.
          :type handles_manager_closing_func: func(connection, handle) -> void
         """
-        self.logger = create_logger_with_prefix("MS_RPC_Connection Manager")
+        self.logger = create_logger_with_prefix("RPC_Connection Manager")
         self.__dict__.update(target._asdict())
         self.__dict__.update(vars(target.options))
         self._handles_interface = namedtuple(self._CONNECTION_HANDLES_CLASS_NAME, self._CONNECTION_HANDLES_NAMES)
@@ -38,13 +38,14 @@ class AbstractConnectionContextManager(ABC):
         self.connection = None
 
     def __enter__(self):
+        self.logger.debug("Starting connection!")
         try:
             self.handles, self.connection, self.domain_name = self.connect()
         except Exception as err:
             self.close_connection()
             raise err
 
-        self.logger.debug(f"Connected to domain {self.domain_name}.")
+        self.logger.debug(f"Connected to domain {self.domain_name} successfully.")
         self.domain_handle = self.handles[0]
 
         return (self.connection, self.domain_handle), self.domain_name
