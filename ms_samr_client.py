@@ -92,9 +92,6 @@ class MS_SAMR_Client(Cmd):
         Add a new entry to the remote Active Directory domain.
         :param entry_type: accepted values: user / group
         :param entry_name: if not given, a random entry name will be created
-
-        :return entry_type, entry_name
-         :rtype str, str
         """
         if not entry_name:
             entry_name = self.random_computer_name(entry_type)
@@ -104,17 +101,12 @@ class MS_SAMR_Client(Cmd):
         with self.connection_manager() as (connection, domain_name):
             self._add_entry(connection, entry_type, entry_name)
 
-        return entry_type, entry_name
-
     @shell_decorators.split_args
     @shell_decorators.validate_entry_type(err_msg=UNDEFINED_ENTRY_TYPE, allow_no_entry_type=True)
     def do_list_entries(self, entry_type=None):
         """
         Lists all groups and local users of the remote Active Directory domain.
         :param entry_type: optional. if not given, all local users and groups will be listed. accepted values: user / group
-
-        :return entries_by_type
-         :rype: {Type(Entry): {entry_name: entry_id}}
         """
         if not entry_type:
             entry_type = self.ALL_ENTRIES
@@ -132,7 +124,6 @@ class MS_SAMR_Client(Cmd):
             entries_by_type = self._list_entries(connection, entry_type)
 
         pprint(entries_by_type)
-        return entries_by_type
 
     def default(self, inp):
         print(f"Unknown action: {inp}. Type '?' to list available commands")
