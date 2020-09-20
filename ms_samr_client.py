@@ -8,12 +8,19 @@ from ms_samr_parser import MS_SAMR_OptionsParser as options_parser, MS_SAMR_Shel
 
 
 class MS_SAMR_Client(Cmd):
+    """
+    API Client for Microsoft Security Account Manager Protocol.
+    Can be run with arguments as executable (see help) or as shell.
+
+    The main parameter to get you going is 'target' and is formatted as:
+    [domain/]username[:password]@]<targetName or address>
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.logger = create_logger_with_prefix("MS_SAMR Client")
 
-        options = options_parser.parse_args(self.logger)
+        options = options_parser.parse_args()
 
         self.file = getattr(options, "file", None)
         self._target = options_parser.process_target(options, self.logger)
@@ -52,9 +59,10 @@ class MS_SAMR_Client(Cmd):
     # endregion ---------- properties ----------
     # region ---------- shell ----------
 
-    LOCAL = "local"
+    USER = "user"
     GROUP = "group"
-    ENTRY_TYPES_TO_OBJECTS = {LOCAL: User,
+    ALL_ENTRIES = "all"
+    ENTRY_TYPES_TO_OBJECTS = {USER: User,
                               GROUP: Group}
     ENTRY_TYPES = ENTRY_TYPES_TO_OBJECTS.keys()
 
@@ -82,7 +90,7 @@ class MS_SAMR_Client(Cmd):
     def do_add_entry(self, entry_type, entry_name=None):
         """
         Add a new entry to the remote Active Directory domain.
-        :param entry_type: accepted values: local / group
+        :param entry_type: accepted values: user / group
         :param entry_name: if not given, a random entry name will be created
         """
         if not entry_name:
@@ -98,21 +106,24 @@ class MS_SAMR_Client(Cmd):
     def do_list_entries(self, entry_type=None):
         """
         Lists all groups and local users of the remote Active Directory domain.
-        :param entry_type: optional. if not given, all local users and groups will be listed. accepted values: local / group
+        :param entry_type: optional. if not given, all local users and groups will be listed. accepted values: user / group
         """
         if not entry_type:
+            entry_type = self.ALL_ENTRIES
+
+        if entry_type == self.ALL_ENTRIES:
             print("Listing all local users and groups!")
 
-        elif entry_type.lower() == self.GROUP:
+        elif entry_type == self.GROUP:
             print("Listing all groups!")
 
-        elif entry_type.lower() == self.LOCAL:
+        elif entry_type == self.USER:
             print("Listing all local users!")
 
         with self.connection_manager() as (connection, domain_name):
-            entries_list = self._list_entries(connection, entry_type)
+            entries_by_type = self._list_entries(connection, entry_type)
 
-        pprint(entries_list)
+        pprint(entries_by_type)
 
     def default(self, inp):
         print(f"Unknown action: {inp}. Type '?' to list available commands")
@@ -123,27 +134,66 @@ class MS_SAMR_Client(Cmd):
     # region ---------- action functions ----------
 
     def _add_entry(self, connection, entry_type, entry_name):
+        """
+        :param connection: (dce, domain_controller)
+        :param entry_type: user / group
+        :param entry_name:
+
+        :return created or not
+         :rtype bool
+        """
         self.logger.debug(f"Adding entry of type {entry_type} with name {entry_name}.")
-        created = None
         try:
-            created = self.ENTRY_TYPES_TO_OBJECTS[entry_type].create(connection, entry_name)
+            created = self.ENTRY_TYPES_TO_OBJECTS[entry_type].create(connection, name=entry_name)
         except Exception as err:
             print(f"Could not create {entry_name}. AD Error message: {str(err)}")
-        else:
-            print(f"Entry added successfully!")
+            return False
+
+        print(f"Entry added successfully!")
+        return True
 
     def _list_entries(self, connection, entry_type):
-        self.logger.debug(f"Listing entries of type {entry_type}...")
-        entries_list = self.ENTRY_TYPES_TO_OBJECTS[entry_type].list_all(connection)
+        """
+        :param connection: (dce, domain_controller)
+        :param entry_type: user / group
+        :return: entries_by_type mapping
+         :rtype dict
+        """
+        entries_by_type = {}
 
-        return entries_list
+        if entry_type == self.USER or entry_type == self.ALL_ENTRIES:
+            try:
+                user_entries = self.ENTRY_TYPES_TO_OBJECTS[self.USER].list_all(connection)
+            except Exception as err:
+                print(f"Could not get entries_list for type {self.USER}. AD Error message: {str(err)}")
+                return []
+
+            entries_by_type["Users"] = {user.name: user.uid for user in user_entries}
+
+        if entry_type == self.GROUP or entry_type == self.ALL_ENTRIES:
+            try:
+                group_entries = self.ENTRY_TYPES_TO_OBJECTS[self.GROUP].list_all(connection)
+            except Exception as err:
+                print(f"Could not get entries_list for type {self.GROUP}. AD Error message: {str(err)}")
+                return []
+
+            entries_by_type["Groups"] = {group.name: group.uid for group in group_entries}
+
+        print(f"Entries list retrieved successfully!")
+
+        return entries_by_type
 
     # endregion ---------- action functions ----------
     # region ---------- helper functions ----------
 
     @staticmethod
     def random_computer_name(entry_type):
-        return get_random_string(length=10, prefix=f"TestUser_{entry_type}_")
+        """
+        :param entry_type: user / group. acts as prefix for the name.
+        :return: random computer name with format "{entry_type}_TestEntity_{random_string}"
+         :rtype str
+        """
+        return get_random_string(length=10, prefix=f"{entry_type}_TestEntity_")
 
     # endregion ---------- helper functions ----------
 

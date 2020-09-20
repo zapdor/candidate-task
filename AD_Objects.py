@@ -1,9 +1,14 @@
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from contextlib import contextmanager
+from logging import DEBUG
 
 from impacket.dcerpc.v5 import samr
-from impacket.smb import MAXIMUM_ALLOWED
+from impacket.dcerpc.v5.rpcrt import DCERPCException
+from impacket.nt_errors import STATUS_MORE_ENTRIES
+from impacket.smb import MAXIMUM_ALLOWED, STATUS_SUCCESS
+
+from general_tools import create_logger_with_prefix
 
 
 class Target(namedtuple("CymptomTarget",
@@ -21,7 +26,8 @@ class Target(namedtuple("CymptomTarget",
 
 class ADEntry(ABC):
     HANDLE = 'ABSTRACT'
-    INFO_LOCATION_IN_BUFFER = 'ABSTRACT'
+    INFO_CLASS = 'ABSTRACT'
+    INFO_LOCATION_IN_BUFFER = 'General'
     ID_LOCATION = 'RelativeId'
 
     # Abstract functions
@@ -36,41 +42,89 @@ class ADEntry(ABC):
         self.uid = uid
         self.entry_info = entry_info
 
+    @classmethod
+    def get_AD_logger(cls):
+        return create_logger_with_prefix(cls.__name__)
+
+    @classmethod
     @contextmanager
-    def get_entry_info(self, connection, entry_raw_info):
-        entry_resp = self.OPEN_FUNC(*connection, MAXIMUM_ALLOWED, entry_raw_info[self.ID_LOCATION])
-        entry_handle = entry_resp[self.HANDLE]
+    def process_raw_entry_info(cls, connection, entry_raw_info):
+        entry_resp = cls.OPEN_FUNC(*connection, MAXIMUM_ALLOWED, entry_raw_info[cls.ID_LOCATION])
+        entry_handle = entry_resp[cls.HANDLE]
         dce = connection[0]
-        entry_info = self.PROCESS_INFO_FUNC(dce, entry_handle)
+        entry_info = cls.PROCESS_INFO_FUNC(dce, entry_handle)
         try:
             yield entry_info
         finally:
             samr.hSamrCloseHandle(dce, entry_handle)
 
     @classmethod
-    def create(cls, connection, name):
+    def create(cls, connection, name=None, entry_raw_info=None):
+        if all(v is not None for v in [name, entry_raw_info]):
+            raise RuntimeError("Create can work on either name or entry_raw_info, but not both!")
+
+        if all(v is None for v in [name, entry_raw_info]):
+            raise RuntimeError("Create must receive either name or entry_raw_info to create an AD entry!")
+
+        if entry_raw_info is not None:
+            return cls._create_entry_from_raw_info(connection, entry_raw_info)
+
+        return cls._create_entry_from_name(connection, name)
+
+    @classmethod
+    def _create_entry_from_name(cls, connection, name):
         create_resp = cls.CREATE_FUNC(*connection, name)
         uid = create_resp[cls.ID_LOCATION]
         entry_obj = cls(name, uid, None)
 
         return entry_obj
 
-    def get(self, connection, entry_raw_info):
-        name = entry_raw_info['Name']
-        uid = entry_raw_info['RelativeId']
-        with self.get_entry_info(connection, entry_raw_info) as entry_info:
-            entry_obj = self.__class__(name, uid, entry_info['Buffer'][self.INFO_LOCATION_IN_BUFFER])
+    @classmethod
+    def _create_entry_from_raw_info(cls, connection, entry_raw_info):
+        name = entry_raw_info["Name"]
+        uid = entry_raw_info["RelativeId"]
+        with cls.process_raw_entry_info(connection, entry_raw_info) as entry_info:
+            entry_obj = cls(name, uid, entry_info["Buffer"][cls.INFO_LOCATION_IN_BUFFER])
 
         return entry_obj
 
-    def list_all(self, connection):
-        entries_list = self.ENUMERATE_FUNC(*connection)
+    @classmethod
+    def list_all(cls, connection):
+        entries_list = []
+        page = 1
+
+        status = STATUS_MORE_ENTRIES
+        while status == STATUS_MORE_ENTRIES:
+            try:
+                resp = cls.ENUMERATE_FUNC(*connection)
+            except DCERPCException as e:
+                if str(e).find("STATUS_MORE_ENTRIES") < 0:
+                    raise
+                resp = e.get_packet()
+
+            entries_raw_info = resp["Buffer"]["Buffer"]
+            page_entries = [cls.create(connection, entry_raw_info=entry_raw_info) for entry_raw_info in entries_raw_info]
+
+            cls.get_AD_logger().debug(f"Found {len(page_entries)} AD entries of type {cls.__name__} in page {page}")
+            page += 1
+
+            entries_list.extend(page_entries)
+
+            try:
+                status = resp['ErrorCode']
+            except KeyError as err:
+                raise RuntimeError(
+                    f"Received error on page {page}, while listing entries of type {cls.__name__}. AD Error message: {str(err)}")
+
+            if status != STATUS_SUCCESS:
+                raise ConnectionError(f"Received status {status} on page {page} while listing entries of type {cls.__name__}")
 
         return entries_list
 
 
 class User(ADEntry):
     HANDLE = 'UserHandle'
+    INFO_CLASS = samr.USER_INFORMATION_CLASS.UserAllInformation
 
     CREATE_FUNC = samr.hSamrCreateUser2InDomain
     OPEN_FUNC = samr.hSamrOpenUser
@@ -80,6 +134,7 @@ class User(ADEntry):
 
 class Group(ADEntry):
     HANDLE = 'GroupHandle'
+    INFO_CLASS = 'ABSTRACT'
 
     CREATE_FUNC = samr.hSamrCreateGroupInDomain
     OPEN_FUNC = samr.hSamrOpenGroup

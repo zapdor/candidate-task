@@ -5,6 +5,9 @@ from AbstractClasses.abstract_connection_manager import AbstractConnectionContex
 
 
 class MS_RPC_ConnectionManager(AbstractConnectionContextManager):
+    """
+    Connection Manager for Microsoft Security Account Manager API.
+    """
     SERVER_HANDLE = "ServerHandle"
     DOMAIN_HANDLE = "DomainHandle"
     DOMAIN_ID = "DomainId"

@@ -4,12 +4,27 @@ from general_tools import create_logger_with_prefix
 
 
 class AbstractConnectionContextManager(ABC):
+    """
+    Interface for RPC Connection Managers.
+    Acts as Context Manager.
+    This allows using the concrete connection managers using "with", like file context managers.
+    It will automagically open and close the connection once communication is over.
+
+    Example usage:
+        with concrete_connection_manager(*args) as connection:
+            do_some_communication_or_processing
+    """
     _CONNECTION_HANDLES_CLASS_NAME = "ConnectionHandles"
     _SERVER_HANDLE = "server_handle"
     _DOMAIN_HANDLE = "domain_handle"
     _CONNECTION_HANDLES_NAMES = [_SERVER_HANDLE, _DOMAIN_HANDLE]
 
     def __init__(self, target, handles_manager_func=lambda connection, handle: None):
+        """
+        :param target: the
+         :type AD_Objects.Target
+        :param handles_manager_func:
+        """
         self.logger = create_logger_with_prefix("MS_RPC_Connection Manager")
         self.__dict__.update(target._asdict())
         self.__dict__.update(vars(target.options))

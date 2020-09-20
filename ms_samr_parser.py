@@ -1,5 +1,6 @@
 import argparse
 import functools
+import os
 import re
 import sys
 from logging import DEBUG
@@ -10,12 +11,18 @@ from impacket import version as impacket_version
 
 
 class MS_SAMR_OptionsParser:
+    """
+    Class for parsing the commandline / shell options given to the Microsoft Security Account Manager Protocol Client.
+    """
 
     @staticmethod
-    def parse_args(logger=None):
-        if not logger:
-            logger = create_logger_with_prefix("Args Parser")
-
+    def parse_args():
+        """
+        Optional: Parse method for options given from the commandline. Run with -h option for help.
+        :return: options namespace, as parsed from commandline
+         :rtype argparse.Namespace (=object) with the parsed options as class variables
+        """
+        logger = create_logger_with_prefix("Args Parser")
         logger.info("Starting to parse arguments.")
 
         parser = argparse.ArgumentParser(add_help=True,
@@ -60,20 +67,29 @@ class MS_SAMR_OptionsParser:
             options = parser.parse_args()
 
         if options.debug is True:
+            os.environ["SAMR_DEBUG"] = "1"
             logger.setLevel(DEBUG)
             logger.debug(impacket_version.getInstallationPath())
+        else:
+            os.environ["SAMR_DEBUG"] = "0"
 
         logger.info("Finished parsing arguments.")
 
         return options
 
     @staticmethod
-    def process_target(options, logger=None):
+    def process_target(options):
+        """
+        Processes an AD_Objects.Target object from given options.
+        Options can be given from commandline or shell commands.
+        :param options: argparse.Namespace (=object) with the parsed options as class variables
+        :return: An object representing the target Active Directory Domain
+         :rtype AD_Objects.Target object
+        """
         if not options:
             return
 
-        if not logger:
-            logger = create_logger_with_prefix("Target Processor")
+        logger = create_logger_with_prefix("Target Processor")
 
         logger.info("Started processing target from given options.")
 
@@ -111,8 +127,13 @@ class MS_SAMR_OptionsParser:
 
 
 class MS_SAMR_ShellDecorators:
-
+    """
+    Class for decorators to improve shell functions of Microsoft Security Account Manager Protocol Client.
+    """
     def split_args(func):
+        """
+        Shell functions gets args as 1 string (example: args_str="arg1 arg2 arg3"). This will split them.
+        """
         @functools.wraps(func)
         def wrapper(instance, args_str, *args, **kwargs):
             args_list = tuple(args_str.split() or [None] + list(args))
