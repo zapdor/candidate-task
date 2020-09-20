@@ -22,20 +22,30 @@ class AbstractConnectionContextManager(ABC):
         self.connection = None
 
     def __enter__(self):
-        self.handles, self.connection, self.domain_name = self.connect()
-        self.domain_name = self.handles[0]
+        try:
+            self.handles, self.connection, self.domain_name = self.connect()
+        except Exception as err:
+            self.close_connection()
+            raise err
 
-        return self.domain_handle
+        self.logger.debug(f"Connected to domain {self.domain_name}.")
+        self.domain_handle = self.handles[0]
+
+        return (self.connection, self.domain_handle), self.domain_name
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close_connection()
+        self.logger.debug(f"Disconnected from domain {self.domain_name} successfully.")
+
+    def close_connection(self):
         if not self.connection:
             return
 
         for name, handle in self.handles._asdict().items():
-            if not handle:
-                continue
-
-            self._handles_manager_func(self.connection, handle)
+            try:
+                self._handles_manager_func(self.connection, handle)
+            except:
+                pass
 
         self.connection.disconnect()
 

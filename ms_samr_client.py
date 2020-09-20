@@ -1,6 +1,7 @@
 from cmd import Cmd
+from pprint import pprint
 
-from AD_Objects import User
+from AD_Objects import User, Group
 from general_tools import create_logger_with_prefix, get_random_string
 from ms_rpc_connection_manager import MS_RPC_ConnectionManager
 from ms_samr_parser import MS_SAMR_OptionsParser as options_parser, MS_SAMR_ShellDecorators as shell_decorators
@@ -53,7 +54,9 @@ class MS_SAMR_Client(Cmd):
 
     LOCAL = "local"
     GROUP = "group"
-    ENTRY_TYPES = [LOCAL, GROUP]
+    ENTRY_TYPES_TO_OBJECTS = {LOCAL: User,
+                              GROUP: Group}
+    ENTRY_TYPES = ENTRY_TYPES_TO_OBJECTS.keys()
 
     prompt = f"{'MS_SAMR_CLIENT'}> "
     intro = """Welcome to Dor Bareket's 'Remote Microsoft Security Account Manager'. 
@@ -62,8 +65,8 @@ class MS_SAMR_Client(Cmd):
     
     Type ? to list commands"""
 
-    PLEASE_INSET_ENTRY_TYPE_MSG = f"Please choose which entry type from {ENTRY_TYPES}: "
-    UNDEFINED_ENTRY_TYPE = f"Undefined entry_type! Allowed only: {ENTRY_TYPES}"
+    PLEASE_INSET_ENTRY_TYPE_MSG = f"Please choose which entry type from {', '.join(ENTRY_TYPES)}: "
+    UNDEFINED_ENTRY_TYPE = f"Undefined entry_type! Allowed only: {', '.join(ENTRY_TYPES)}"
 
     def do_exit(self, input):
         """
@@ -86,10 +89,9 @@ class MS_SAMR_Client(Cmd):
             entry_name = self.random_computer_name(entry_type)
 
         print(f"Adding entry of type '{entry_type}' with name '{entry_name}' to the remote Active Directory.")
-        with self.connection_manager(self.target) as connection:
-            pass
 
-        # TODO
+        with self.connection_manager() as (connection, domain_name):
+            self._add_entry(connection, entry_type, entry_name)
 
     @shell_decorators.split_args
     @shell_decorators.validate_entry_type(err_msg=UNDEFINED_ENTRY_TYPE, allow_no_entry_type=True)
@@ -107,10 +109,10 @@ class MS_SAMR_Client(Cmd):
         elif entry_type.lower() == self.LOCAL:
             print("Listing all local users!")
 
-        with self.connection_manager() as domain_handles:
-            pass
+        with self.connection_manager() as (connection, domain_name):
+            entries_list = self._list_entries(connection, entry_type)
 
-        # TODO
+        pprint(entries_list)
 
     def default(self, inp):
         print(f"Unknown action: {inp}. Type '?' to list available commands")
@@ -118,6 +120,25 @@ class MS_SAMR_Client(Cmd):
     do_EOF = do_exit
 
     # endregion ---------- shell ----------
+    # region ---------- action functions ----------
+
+    def _add_entry(self, connection, entry_type, entry_name):
+        self.logger.debug(f"Adding entry of type {entry_type} with name {entry_name}.")
+        created = None
+        try:
+            created = self.ENTRY_TYPES_TO_OBJECTS[entry_type].create(connection, entry_name)
+        except Exception as err:
+            print(f"Could not create {entry_name}. AD Error message: {str(err)}")
+        else:
+            print(f"Entry added successfully!")
+
+    def _list_entries(self, connection, entry_type):
+        self.logger.debug(f"Listing entries of type {entry_type}...")
+        entries_list = self.ENTRY_TYPES_TO_OBJECTS[entry_type].list_all(connection)
+
+        return entries_list
+
+    # endregion ---------- action functions ----------
     # region ---------- helper functions ----------
 
     @staticmethod
@@ -134,7 +155,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 # TODO - FIXME - docstring
 # TODO - FIXME - unit-tests

@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 from impacket.dcerpc.v5 import epm, samr, transport
 
 from general_tools import create_logger_with_prefix
@@ -53,7 +51,7 @@ class MS_RPC_ConnectionManager(AbstractConnectionContextManager):
         samr_enum_resp = samr.hSamrEnumerateDomainsInSamServer(dce, server_handle)
 
         all_domains = samr_enum_resp['Buffer']['Buffer']
-        available_domain_names = {domain['Name'] for domain in all_domains if domain['Name'].lower() != 'builtin'}
+        available_domain_names = [domain['Name'] for domain in all_domains if domain['Name'].lower() != 'builtin']
         if len(available_domain_names) > 1:
             raise ConnectionError(f"Only support 1 domain, but more than 1 found: {', '.join(available_domain_names)}")
         elif len(available_domain_names) == 0:
@@ -65,7 +63,7 @@ class MS_RPC_ConnectionManager(AbstractConnectionContextManager):
 
         return domain_name, domain_handle
 
-    def _open_domain_handle(self, dce, server_handle, domain_names):
+    def _open_domain_handle(self, dce, server_handle, domain_name):
         lookup_domain_resp = samr.hSamrLookupDomainInSamServer(dce, server_handle, domain_name)
         domain_sid = lookup_domain_resp[self.DOMAIN_ID]
 
@@ -77,7 +75,3 @@ class MS_RPC_ConnectionManager(AbstractConnectionContextManager):
         self.logger.debug(f"Domain {domain_name} opened!")
 
         return domain_handle
-
-
-
-
