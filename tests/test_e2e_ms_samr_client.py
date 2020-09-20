@@ -1,18 +1,20 @@
 from logging import DEBUG
 
 import pytest
-from ms_samr_client import MS_SAMR_Client
+
 from general_tools import create_logger_with_prefix
+from ms_samr_client import MS_SAMR_Client
 
 pytestmark = [pytest.mark.e2e_tests, pytest.mark.success]
 logger = create_logger_with_prefix("E2E_TESTS", DEBUG)
 
 
 @pytest.mark.parametrize("entry_type", MS_SAMR_Client.ENTRY_TYPES)
-def test__connect__add_entry__get_entries(entry_type, credentials, random_computer_name_fixture):
-    entry_name_to_add = random_computer_name_fixture
+@pytest.mark.usefixtures("_credentials", "_random_computer_name_fixture")
+def test__e2e__connect__add_entry__get_entries(entry_type, _credentials, _random_computer_name_fixture):
+    entry_name_to_add = _random_computer_name_fixture
 
-    client = MS_SAMR_Client(credentials)
+    client = MS_SAMR_Client(_credentials)
 
     logger.debug(f"Adding {entry_type} {entry_name_to_add}")
     client.do_add_entry(entry_type=entry_type, entry_name=entry_name_to_add)

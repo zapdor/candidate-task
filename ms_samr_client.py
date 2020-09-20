@@ -70,7 +70,7 @@ class MS_SAMR_Client(Cmd):
     intro = """Welcome to Dor Bareket's 'Remote Microsoft Security Account Manager'. 
     This tool was created as part of the candidate task for "Cymptom".
     Hope you enjoy!
-    
+
     Type ? to list commands"""
 
     PLEASE_INSET_ENTRY_TYPE_MSG = f"Please choose which entry type from {', '.join(ENTRY_TYPES)}: "
@@ -205,6 +205,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# TODO - FIXME - docstring
-# TODO - FIXME - unit-tests

@@ -130,10 +130,12 @@ class MS_SAMR_ShellDecorators:
     """
     Class for decorators to improve shell functions of Microsoft Security Account Manager Protocol Client.
     """
+
     def split_args(func):
         """
         Shell functions gets args as 1 string (example: args_str="arg1 arg2 arg3"). This will split them.
         """
+
         @functools.wraps(func)
         def wrapper(instance, args_str, *args, **kwargs):
             args_list = tuple(args_str.split() or [None] + list(args))

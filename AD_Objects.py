@@ -128,7 +128,8 @@ class ADEntry(ABC):
                 resp = e.get_packet()
 
             entries_raw_info = resp["Buffer"]["Buffer"]
-            page_entries = [cls.create(connection, entry_raw_info=entry_raw_info) for entry_raw_info in entries_raw_info]
+            page_entries = [cls.create(connection, entry_raw_info=entry_raw_info) for entry_raw_info in
+                            entries_raw_info]
 
             logger.debug(f"Found {len(page_entries)} AD entries of type {cls.__name__} in page {page}")
             page += 1
@@ -138,11 +139,13 @@ class ADEntry(ABC):
             try:
                 status = resp['ErrorCode']
             except KeyError as err:
-                raise RuntimeError(
-                    f"Received error on page {page}, while listing entries of type {cls.__name__}. AD Error message: {str(err)}")
+                error_msg = f"Received error on page {page}, while listing entries of type {cls.__name__}. "
+                error_msg += f"AD Error message: {str(err)}"
+                raise RuntimeError(error_msg)
 
             if status != STATUS_SUCCESS:
-                raise ConnectionError(f"Received status {status} on page {page} while listing entries of type {cls.__name__}")
+                raise ConnectionError(
+                    f"Received status {status} on page {page} while listing entries of type {cls.__name__}")
 
         return entries_list
 

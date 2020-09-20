@@ -1,6 +1,6 @@
-from os import getenv
 import pytest
 
+import os
 from ms_samr_client import MS_SAMR_Client
 
 ENV_DOMAIN_VAR = "candidate_domain"
@@ -11,8 +11,8 @@ ENV_NEEDED_VARS = {ENV_DOMAIN_VAR, ENV_USER_VAR, ENV_PASSWORD_VAR, ENV_TARGET_VA
 
 
 @pytest.fixture()
-def credentials():
-    existing_vars = {env_var.split('_')[1]: env_val for env_var in ENV_NEEDED_VARS if (env_val := getenv(env_var))}
+def _credentials():
+    existing_vars = {env_var.split('_')[1]: env_val for env_var in ENV_NEEDED_VARS if (env_val := os.getenv(env_var))}
     missing_env_vars = ENV_NEEDED_VARS.difference(existing_vars.keys())
     if missing_env_vars:
         raise EnvironmentError("Please add the missing vars to your environment and rerun tests: {}".
@@ -22,5 +22,5 @@ def credentials():
 
 
 @pytest.fixture()
-def random_computer_name_fixture(entry_type):
+def _random_computer_name_fixture(entry_type):
     return MS_SAMR_Client.random_computer_name(entry_type)

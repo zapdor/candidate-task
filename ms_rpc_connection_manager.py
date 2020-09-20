@@ -34,6 +34,8 @@ class MS_RPC_ConnectionManager(AbstractConnectionContextManager):
 
         return (domain_handle, server_handle), dce, domain_name
 
+    # region ---------- connection methods ----------
+
     def _config_rpc_transport(self):
         string_binding = epm.hept_map(self.target_ip, samr.MSRPC_UUID_SAMR, protocol='ncacn_np')
 
@@ -89,3 +91,5 @@ class MS_RPC_ConnectionManager(AbstractConnectionContextManager):
         self.logger.debug(f"Domain {domain_name} opened!")
 
         return domain_handle
+
+    # endregion ---------- connection methods ----------
