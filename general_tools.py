@@ -16,7 +16,7 @@ def create_logger_with_prefix(log_prefix, logger_level=logging.INFO):
         logger_level = logging.DEBUG
 
     log_format = f"[{log_prefix}]: %(message)s"
-    logger = logging.getLogger("__name__")
+    logger = logging.getLogger(log_prefix)
     handler = logging.StreamHandler()
     formatter = logging.Formatter(log_format)
     handler.setFormatter(formatter)

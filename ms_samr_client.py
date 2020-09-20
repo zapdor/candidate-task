@@ -21,9 +21,9 @@ class MS_SAMR_Client(Cmd):
         self.logger = create_logger_with_prefix("MS_SAMR Client")
 
         options = options_parser.parse_args()
+        self._target = options_parser.process_target(options)
 
         self.file = getattr(options, "file", None)
-        self._target = options_parser.process_target(options)
         self.connection_manager = lambda: MS_RPC_ConnectionManager(self.target)
 
     def run(self):
